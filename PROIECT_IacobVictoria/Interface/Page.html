@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ro">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Indicatori Economici UE</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+
+      .filters {
+        margin-bottom: 20px;
+      }
+
+      .tooltip {
+        position: absolute;
+        text-align: center;
+        padding: 10px;
+        font-size: 12px;
+        background-color: rgba(0, 0, 0, 0.8);
+        color: #fff;
+        border-radius: 4px;
+        pointer-events: none;
+      }
+
+      select,
+      input {
+        padding: 8px;
+        margin: 5px;
+        font-size: 16px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+
+      /* Aliniere la mijloc pentru toate celulele */
+      th,
+      td {
+        text-align: center;
+        padding: 10px;
+      }
+
+      /* Stilizare pentru capul de tabel */
+      th {
+        background-color: #f2f2f2;
+      }
+
+      /* Adăugăm scroll pentru tabel */
+      #dataTableWrapper {
+        max-height: 500px; /* Setează o înălțime maximă pentru scroll */
+        overflow-y: auto;
+        display: block; /* Face tabelul să fie scrollable pe verticală */
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Indicatori Economici UE</h1>
+
+    <!-- Filtre pentru Indicator, Țară și An -->
+    <div class="filters">
+      <select id="indicatorSelect">
+        <option value="All">All</option>
+        <option value="PIB">PIB</option>
+        <option value="SV">Speranța de viață</option>
+        <option value="POP">Populație</option>
+      </select>
+
+      <input type="text" id="countryInput" placeholder="Filtrează după țară" />
+      <input type="number" id="yearInput" placeholder="Filtrează după an" />
+    </div>
+
+    <!-- Div care face tabelul scrollable -->
+    <div id="dataTableWrapper">
+      <!-- Tabelul care va conține datele -->
+      <table id="dataTable">
+        <thead>
+          <tr>
+            <th>Țara</th>
+            <th>An</th>
+            <th>Indicator</th>
+            <th>Valoare</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <div class="svg-grafic">
+      <select id="indicatorSelectSVG">
+        <option value="" disabled selected>--Alege un indicator--</option>
+      </select>
+      <select id="countrySelect">
+        <option value="" disabled selected>--Alege o țară--</option>
+      </select>
+      <button id="seeSvgButton">See SVG</button>
+      <div id="chart">
+      </div>
+      
+    </div>
+    <script type="text/javascript" src="http://d3js.org/d3.v2.js"></script>
+    <script src="/Functionality/Integration.js"></script>
+  </body>
+</html>
