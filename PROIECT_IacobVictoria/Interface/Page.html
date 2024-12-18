@@ -97,10 +97,19 @@
         <option value="" disabled selected>--Alege o țară--</option>
       </select>
       <button id="seeSvgButton">See SVG</button>
-      <div id="chart">
-      </div>
-      
+      <div id="chart"></div>
     </div>
+    <h2>Bubble Chart</h2>
+    <div>
+      <label for="yearSelect">Selectează Anul:</label>
+      <select id="yearSelect">
+        <option value="" disabled selected>--Alege un an--</option>
+      </select>
+      <button id="showBubbleButton">Afișează Bubble Chart</button>
+      <button id="startAnimation">Animație Bubble Chart</button>
+    </div>
+
+    <canvas id="bubbleChart" width="800" height="500"></canvas>
     <script type="text/javascript" src="http://d3js.org/d3.v2.js"></script>
     <script src="/PROIECT_IacobVictoria/Functionality/Integration.js"></script>
   </body>

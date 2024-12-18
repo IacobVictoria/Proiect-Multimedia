@@ -345,3 +345,95 @@ document.getElementById("seeSvgButton").addEventListener("click", async () => {
   console.log(filteredData);
   createGraph(filteredData);
 });
+
+//bubble chart
+function bubbleChartDraw(year, data) {
+  const canvas = document.getElementById("bubbleChart");
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, canvas.width, canvas.height); // Curățăm canvas-ul
+  const marginTop = 50; // Marja de sus
+  const marginBottom = 50; // Marja de jos
+  const padding = 10; // Marja pentru canvas
+
+  const chartWidth = canvas.width - padding * 2;
+  const chartHeight = canvas.height - marginTop - marginBottom;
+  // Filtrăm datele pentru anul selectat
+  const yearData = data.filter((row) => row.year === year.toString());
+
+  // Desenăm axa X
+  ctx.beginPath();
+  ctx.moveTo(padding, chartHeight - padding); // Axa X, poziție jos
+  ctx.lineTo(chartWidth + padding, chartHeight - padding); // Axa X, până la dreapta
+  ctx.strokeStyle = "black";
+  ctx.stroke();
+
+  // Desenăm axa Y
+  ctx.beginPath();
+  ctx.moveTo(padding, padding); // Axa Y, poziție sus
+  ctx.lineTo(padding, chartHeight + padding); // Axa Y, până jos
+  ctx.strokeStyle = "black";
+  ctx.stroke();
+
+  // Desenăm bulele pentru datele filtrate
+  yearData.forEach((item) => {
+    const radius = Math.sqrt(item.value) / 100; // Calculăm raza proporțională
+    const x = Math.random() * (canvas.width - 50) + 25; // Poziție X aleatoare
+    const y = Math.random() * (canvas.height - 50) + 25; // Poziție Y aleatoare
+
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, 2 * Math.PI);
+    ctx.fillStyle = "rgba(100, 150, 255, 0.7)";
+    ctx.fill();
+    ctx.stroke();
+    ctx.closePath();
+
+    // Adăugăm tooltip (text) pentru fiecare bulă
+    ctx.font = "12px Arial";
+    ctx.fillStyle = "black";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(item.country, x, y);
+  });
+}
+function setupBubbleChart() {
+  const yearSelect = document.getElementById("yearSelect");
+  // Populăm dropdown cu anii disponibili
+  years.forEach((year) => {
+    const option = document.createElement("option");
+    option.value = year;
+    option.textContent = year;
+    yearSelect.appendChild(option);
+  });
+
+  // Event Listener pentru afișarea Bubble Chart la anul selectat
+  document.getElementById("showBubbleButton").addEventListener("click", () => {
+    const selectedYear = yearSelect.value;
+    if (!selectedYear) {
+      alert("Selectează un an pentru a afișa Bubble Chart!");
+      return;
+    }
+    bubbleChartDraw(selectedYear, allData);
+  });
+  document
+    .getElementById("startAnimation")
+    .addEventListener("click", animateBubbleChart);
+}
+let currentYearIndex = 0;
+let intervalId = null;
+function animateBubbleChart() {
+  currentYearIndex = 0;
+
+  if (intervalId) clearInterval(intervalId); // Curățăm orice animație anterioară
+
+  intervalId = setInterval(() => {
+    if (currentYearIndex >= years.length) {
+      clearInterval(intervalId); // Oprire când terminăm toți anii
+      return;
+    }
+
+    const year = years[currentYearIndex];
+    bubbleChartDraw(year,allData);
+    currentYearIndex++;
+  }, 1000); // Interval de 1 secundă între ani
+}
+setupBubbleChart();
