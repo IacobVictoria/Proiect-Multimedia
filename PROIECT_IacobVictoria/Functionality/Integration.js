@@ -206,31 +206,31 @@ indicators.forEach((indicator) => {
 function createGraph(data) {
   console.log("data" + JSON.stringify(data, null, 2));
   // Definirea dimensiunii graficului
-  const margin = { top: 80, right: 30, bottom: 30, left: 150 };
-  const width = 1000 - margin.left - margin.right;
-  const height = 600 - margin.top - margin.bottom;
+  const margin = { top: 20, right: 20, bottom: 40, left: 50 };
+  const width = 800 - margin.left - margin.right;
+  const height = 500 - margin.top - margin.bottom;
 
   // Definirea scalei pentru axele X și Y
   const x = d3.scale
     .linear()
-    .domain([2008, 2023]) // Anii
+    .domain(d3.extent(data, (d) => +d.year)) // Anii
     .range([0, width]);
-
-  // Verificăm dacă datele au valori valide pentru Y și calculăm maximul
-  const maxValue = d3.max(data, function (d) {
-    return d.value;
-  });
 
   const y = d3.scale
     .linear()
-    .domain([0, maxValue]) // Valorile indicatorului, folosind maxValue pentru Y
+    .domain([
+      0,
+      d3.max(data, function (d) {
+        return d.value;
+      }),
+    ]) // Valorile indicatorului, folosind maxValue pentru Y
     .range([height, 0]);
 
   // Crearea axe X și Y
   const xAxis = d3.svg.axis().scale(x).orient("bottom");
   const yAxis = d3.svg.axis().scale(y).orient("left");
 
-  // Crearea graficului
+  // Crearea graficului SVG
   const svg = d3
     .select("#chart")
     .append("svg")
@@ -244,50 +244,82 @@ function createGraph(data) {
     .append("g")
     .attr("class", "x axis")
     .attr("transform", "translate(0," + height + ")")
-    .call(xAxis);
+    .call(xAxis)
+    .append("text")
+    .attr("x", width / 2) // Poziționează textul la mijlocul axei X
+    .attr("y", 30) // Poziționare sub axa X
+    .style("text-anchor", "middle")
+    .style("font-size", "12px")
+    .text("Anii (2008 - 2023)");
 
   // Adăugarea axei Y
-  svg.append("g").attr("class", "y axis").call(yAxis);
-
-  const barWidth = 20; // Setează o lățime fixă a barelor pentru vizibilitate
-  // Crearea barelor pentru grafic
   svg
-  .selectAll(".bar")
-  .data(data) // Legăm direct datele
-  .enter()
-  .append("rect")
-  .attr("class", "bar")
-  .attr("x", function (d) {
-    return x(+d.year) - barWidth / 2; // Convertim `year` la număr pentru scală
-  })
-  .attr("y", function (d) {
-    return y(d.value); // Poziționarea pe axa Y
-  })
-  .attr("width", barWidth) // Lățimea fiecărei bare
-  .attr("height", function (d) {
-    console.log(d.year); // Ar trebui să afișeze anul corect
-    return height - y(d.value); // Înălțimea barei
-  })
-  .on("mouseover", function (event, d) { // Asigură-te că d este obiectul de date
-    console.log(d); // Ar trebui să afișeze obiectul complet
-    tooltip.transition().duration(200).style("opacity", 0.9);
-    tooltip
-      .html(
-        `Țara: ${data[d].country}<br>An: ${data[d].year}<br>Indicator: ${data[d].indicator}<br>Valoare: ${data[d].value}` // Accesăm câmpurile JSON
-      )
-      .style("left", event.pageX + 5 + "px")
-      .style("top", event.pageY - 28 + "px");
-  })
-  .on("mouseout", function () {
-    tooltip.transition().duration(500).style("opacity", 0);
-  });
+    .append("g")
+    .attr("class", "y axis")
+    .call(yAxis)
+    .append("text")
+    .attr("transform", "rotate(-90)") // Rotire text pentru axa Y
+    .attr("x", -height / 2) // Centrat vertical
+    .attr("y", -40) // Poziționare lateral stânga
+    .style("text-anchor", "middle")
+    .style("font-size", "12px")
+    .text("Valori Indicator");
 
-  // Adăugarea tooltip-ului
   const tooltip = d3
     .select("body")
     .append("div")
     .attr("class", "tooltip")
+    .style("position", "absolute")
+    .style("padding", "6px")
+    .style("background", "steelblue")
+    .style("color", "white")
+    .style("border", "1px solid #ddd")
+    .style("border-radius", "4px")
+    .style("pointer-events", "none")
     .style("opacity", 0);
+
+  const line = d3.svg
+    .line()
+    .x(function (d) {
+      return x(+d.year);
+    })
+    .y(function (d) {
+      return y(d.value);
+    });
+
+  // Adăugarea liniei în grafic
+  svg
+    .append("path")
+    .datum(data)
+    .attr("class", "line")
+    .attr("d", line)
+    .style("fill", "none")
+    .style("stroke", "steelblue")
+    .style("stroke-width", "2px")
+    .on("mouseover", function () {
+      tooltip.transition().duration(200).style("opacity", 0.9);
+    })
+    .on("mousemove", function (event) {
+      // Determinăm poziția mouse-ului
+      const mouseX = d3.mouse(this)[0];
+      const yearScale = x.invert(mouseX);
+
+      // Găsim cel mai apropiat punct
+      const closest = data.reduce((prev, curr) => {
+        return Math.abs(curr.year - yearScale) < Math.abs(prev.year - yearScale)
+          ? curr
+          : prev;
+      });
+
+      // Actualizăm tooltip-ul
+      tooltip
+        .html(`An: ${closest.year}<br>Valoare: ${closest.value}`)
+        .style("left", event.pageX + 10 + "px")
+        .style("top", event.pageY - 28 + "px");
+    })
+    .on("mouseout", function () {
+      tooltip.transition().duration(500).style("opacity", 0);
+    });
 }
 
 document.getElementById("seeSvgButton").addEventListener("click", async () => {
