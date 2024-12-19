@@ -5,56 +5,146 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Indicatori Economici UE</title>
     <style>
+      /* Stiluri generale */
       body {
         font-family: Arial, sans-serif;
-        margin: 20px;
+        margin: 60px;
+        padding: 0;
+        background-color: #f9f9f9;
+        color: #333;
       }
 
+      h1,
+      h2 {
+        text-align: center;
+        margin-top: 100px;
+        color: #2c3e50;
+      }
+
+      /* Container central pentru conținut */
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        background: #ffffff;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+      }
+
+      /* Filtre */
       .filters {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+        align-items: center;
         margin-bottom: 20px;
+        gap: 10px;
       }
-
       .tooltip {
         position: absolute;
         text-align: center;
         padding: 10px;
         font-size: 12px;
-        background-color: rgba(0, 0, 0, 0.8);
-        color: #fff;
+        background-color: #2980b9;
+        color: #ddd;
         border-radius: 4px;
         pointer-events: none;
       }
-
       select,
-      input {
-        padding: 8px;
-        margin: 5px;
+      input,
+      button {
+        padding: 10px;
         font-size: 16px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+        background-color: #ffffff;
       }
 
+      button {
+        background-color: #3498db;
+        color: #ffffff;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+
+      button:hover {
+        background-color: #2980b9;
+      }
+
+      /* Tabel */
       table {
         width: 100%;
         border-collapse: collapse;
         margin-top: 20px;
       }
 
-      /* Aliniere la mijloc pentru toate celulele */
       th,
       td {
+        padding: 12px;
         text-align: center;
-        padding: 10px;
+        border: 1px solid #ddd;
       }
 
-      /* Stilizare pentru capul de tabel */
       th {
+        background-color: #2c3e50;
+        color: #ffffff;
+        font-weight: bold;
+      }
+
+      tbody tr:nth-child(even) {
         background-color: #f2f2f2;
       }
 
-      /* Adăugăm scroll pentru tabel */
+      tbody tr:hover {
+        background-color: #eaeaea;
+      }
+
+      /* Wrapper pentru scroll în tabel */
       #dataTableWrapper {
-        max-height: 500px; /* Setează o înălțime maximă pentru scroll */
+        max-height: 500px;
         overflow-y: auto;
-        display: block; /* Face tabelul să fie scrollable pe verticală */
+        margin-top: 20px;
+      }
+
+      /* Secțiune pentru grafic SVG */
+      .svg-grafic {
+        margin-top: 30px;
+        text-align: center;
+      }
+
+      #chart {
+        margin-top: 20px;
+      }
+
+      /* Bubble Chart */
+      #bubbleChartContainer {
+        text-align: center;
+        margin-top: 40px;
+        padding: 20px;
+        background: #f2f2f2;
+        border-radius: 8px;
+      }
+
+      canvas {
+        display: block;
+        margin: 20px auto;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+      }
+
+      /* Mobile responsiveness */
+      @media (max-width: 768px) {
+        .filters {
+          flex-direction: column;
+        }
+
+        select,
+        input,
+        button {
+          width: 100%;
+          margin-bottom: 10px;
+        }
       }
     </style>
   </head>
@@ -98,9 +188,10 @@
       </select>
       <button id="seeSvgButton">See SVG</button>
       <div id="chart"></div>
+      <div class="tooltip" style="opacity: 0"></div>
     </div>
     <h2>Bubble Chart</h2>
-    <div>
+    <div id="bubbleChartContainer">
       <label for="yearSelect">Selectează Anul:</label>
       <select id="yearSelect">
         <option value="" disabled selected>--Alege un an--</option>
@@ -108,8 +199,26 @@
       <button id="showBubbleButton">Afișează Bubble Chart</button>
       <button id="startAnimation">Animație Bubble Chart</button>
     </div>
-
-    <canvas id="bubbleChart" width="800" height="500"></canvas>
+    <canvas id="bubbleChart" width="1000" height="1000"></canvas>
+    <h2>Table PART3</h2>
+    <div class="filters">
+      <label for="yearSelectTable">Selectează Anul:</label>
+      <select id="yearSelectTable"></select>
+    </div>
+    <div id="dataTableWrapper">
+      <table id="dataTable">
+        <thead>
+          <tr>
+            <th>Țară</th>
+            <th>PIB</th>
+            <th>Speranța de viață</th>
+            <th>Populație</th>
+          </tr>
+        </thead>
+        <tbody id="tbody3"></tbody>
+      </table>
+          
+    </div>
     <script type="text/javascript" src="http://d3js.org/d3.v2.js"></script>
     <script src="/PROIECT_IacobVictoria/Functionality/Integration.js"></script>
   </body>

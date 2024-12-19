@@ -168,6 +168,10 @@ async function init() {
   document
     .getElementById("yearInput")
     .addEventListener("input", () => filterData(allData));
+    displayColoredTable(allData, 2008);
+    createGraph(allData);
+    bubbleChartDraw(2008,allData);
+
 }
 
 // Apelăm funcția de inițializare
@@ -206,8 +210,8 @@ indicators.forEach((indicator) => {
 function createGraph(data) {
   console.log("data" + JSON.stringify(data, null, 2));
   // Definirea dimensiunii graficului
-  const margin = { top: 20, right: 20, bottom: 40, left: 50 };
-  const width = 800 - margin.left - margin.right;
+  const margin = { top: 20, right: 20, bottom: 40, left: 120 };
+  const width = 1000 - margin.left - margin.right;
   const height = 500 - margin.top - margin.bottom;
 
   // Definirea scalei pentru axele X și Y
@@ -260,23 +264,12 @@ function createGraph(data) {
     .append("text")
     .attr("transform", "rotate(-90)") // Rotire text pentru axa Y
     .attr("x", -height / 2) // Centrat vertical
-    .attr("y", -40) // Poziționare lateral stânga
+    .attr("y", -100) // Poziționare lateral stânga
     .style("text-anchor", "middle")
     .style("font-size", "12px")
     .text("Valori Indicator");
 
-  const tooltip = d3
-    .select("body")
-    .append("div")
-    .attr("class", "tooltip")
-    .style("position", "absolute")
-    .style("padding", "6px")
-    .style("background", "steelblue")
-    .style("color", "white")
-    .style("border", "1px solid #ddd")
-    .style("border-radius", "4px")
-    .style("pointer-events", "none")
-    .style("opacity", 0);
+  const tooltip = d3.select(".tooltip");
 
   const line = d3.svg
     .line()
@@ -342,7 +335,6 @@ document.getElementById("seeSvgButton").addEventListener("click", async () => {
     return;
   }
   d3.select("#chart").selectAll("*").remove();
-  console.log(filteredData);
   createGraph(filteredData);
 });
 
@@ -351,28 +343,9 @@ function bubbleChartDraw(year, data) {
   const canvas = document.getElementById("bubbleChart");
   const ctx = canvas.getContext("2d");
   ctx.clearRect(0, 0, canvas.width, canvas.height); // Curățăm canvas-ul
-  const marginTop = 50; // Marja de sus
-  const marginBottom = 50; // Marja de jos
-  const padding = 10; // Marja pentru canvas
 
-  const chartWidth = canvas.width - padding * 2;
-  const chartHeight = canvas.height - marginTop - marginBottom;
   // Filtrăm datele pentru anul selectat
   const yearData = data.filter((row) => row.year === year.toString());
-
-  // Desenăm axa X
-  ctx.beginPath();
-  ctx.moveTo(padding, chartHeight - padding); // Axa X, poziție jos
-  ctx.lineTo(chartWidth + padding, chartHeight - padding); // Axa X, până la dreapta
-  ctx.strokeStyle = "black";
-  ctx.stroke();
-
-  // Desenăm axa Y
-  ctx.beginPath();
-  ctx.moveTo(padding, padding); // Axa Y, poziție sus
-  ctx.lineTo(padding, chartHeight + padding); // Axa Y, până jos
-  ctx.strokeStyle = "black";
-  ctx.stroke();
 
   // Desenăm bulele pentru datele filtrate
   yearData.forEach((item) => {
@@ -418,22 +391,121 @@ function setupBubbleChart() {
     .getElementById("startAnimation")
     .addEventListener("click", animateBubbleChart);
 }
+
 let currentYearIndex = 0;
 let intervalId = null;
+let isAnimating = false;
 function animateBubbleChart() {
-  currentYearIndex = 0;
+  const startAnimationButton = document.getElementById("startAnimation");
+  if (isAnimating) {
+    clearInterval(intervalId); // Oprire animație
+    isAnimating = false;
+    startAnimationButton.textContent = "Start Animație Bubble Chart"; // Schimbăm textul butonului
+  } else {
+    currentYearIndex = 0;
+    intervalId = setInterval(() => {
+      if (currentYearIndex >= years.length) {
+        clearInterval(intervalId); // Oprire când terminăm toți anii
+        isAnimating = false;
+        startAnimationButton.textContent = "Start Animație Bubble Chart";
+        return;
+      }
 
-  if (intervalId) clearInterval(intervalId); // Curățăm orice animație anterioară
+      const year = years[currentYearIndex];
+      bubbleChartDraw(year, allData); // Desenăm graficul pentru anul curent
+      currentYearIndex++;
+    }, 1000); // Interval de 1 secundă între ani
 
-  intervalId = setInterval(() => {
-    if (currentYearIndex >= years.length) {
-      clearInterval(intervalId); // Oprire când terminăm toți anii
-      return;
-    }
-
-    const year = years[currentYearIndex];
-    bubbleChartDraw(year,allData);
-    currentYearIndex++;
-  }, 1000); // Interval de 1 secundă între ani
+    isAnimating = true;
+    startAnimationButton.textContent = "Stop Animație Bubble Chart"; // Schimbăm textul butonului
+  }
 }
 setupBubbleChart();
+
+//TABEL
+//Funcție pentru calcularea mediei:
+function calculateAverageByIndicator(data, year, indicator) {
+  const filteredData = data.filter(
+    (row) => row.year === year.toString() && row.indicator === indicator
+  );
+  const total = filteredData.reduce((sum, row) => sum + (row.value || 0), 0);
+  return filteredData.length > 0 ? total / filteredData.length : 0;
+}
+
+function populateYearSelect() {
+  const yearSelect = document.getElementById("yearSelectTable"); // Selectăm elementul <select> din HTML
+
+  years.forEach((year, index) => {
+    const option = document.createElement("option"); // Creăm un element <option>
+    option.value = year; // Setăm valoarea opțiunii (atributul value)
+    option.textContent = year; // Textul vizibil al opțiunii
+
+    if (index === 0) {
+      option.selected = true; // Setăm primul an ca fiind selectat implicit
+    }
+
+    yearSelect.appendChild(option); // Adăugăm opțiunea în <select>
+  });
+}
+
+// Apelăm funcția imediat după ce pagina s-a încărcat
+populateYearSelect();
+
+function displayColoredTable(data, year) {
+  const tbody = document.querySelector("#tbody3");
+  tbody.innerHTML = "";
+
+  // Calculăm media Uniunii Europene pentru fiecare indicator
+  const indicators = ["PIB", "SV", "POP"]; // Numele indicatorilor
+  const averages = {};
+
+  indicators.forEach((indicator) => {
+    averages[indicator] = calculateAverageByIndicator(data, year, indicator);
+  });
+
+  // Grupăm datele pe țări
+  const groupedData = data
+    .filter((row) => row.year === year.toString())
+    .reduce((acc, row) => {
+      if (!acc[row.country]) {
+        acc[row.country] = {};
+      }
+      acc[row.country][row.indicator] = row.value;
+      return acc;
+    }, {});
+
+  // Construim rândurile tabelului
+  Object.keys(groupedData).forEach((country) => {
+    const row = groupedData[country];
+    const tr = document.createElement("tr");
+
+    // Adăugăm țara
+    const tdCountry = document.createElement("td");
+    tdCountry.textContent = country;
+    tr.appendChild(tdCountry);
+
+    // Adăugăm valorile indicatorilor
+    indicators.forEach((indicator) => {
+      const td = document.createElement("td");
+      const value = row[indicator] || 0;
+      const diff = value - averages[indicator];
+      const color =
+        diff > 0
+          ? `rgba(0, 255, 0, ${Math.min(diff / averages[indicator], 1)})`
+          : `rgba(255, 0, 0, ${Math.min(
+              Math.abs(diff) / averages[indicator],
+              1
+            )})`;
+
+      td.textContent = value.toFixed(2);
+      td.style.backgroundColor = color;
+      tr.appendChild(td);
+    });
+
+    tbody.appendChild(tr);
+  });
+}
+document.getElementById("yearSelectTable").addEventListener("change", () => {
+  const year = document.getElementById("yearSelectTable").value;
+  displayColoredTable(allData, year);
+});
